@@ -30,6 +30,9 @@ jobs:
           override: true
           components: rustfmt,clippy
 
+      - name: Authenticate gh CLI
+        run: echo "${{ github.token }}" | gh auth login --with-token --hostname "github.com"
+
       - name: Run clippy
         uses: actions-rs/clippy-check@v1
         with:
