@@ -1,7 +1,7 @@
 # gh-config-rs
 [![Rust](https://github.com/siketyan/gh-config-rs/actions/workflows/rust.yml/badge.svg)](https://github.com/siketyan/gh-config-rs/actions/workflows/rust.yml)
-[![crates.io](https://img.shields.io/crates/v/gh-config.svg)](https://crates.io/crates/apdu)
-[![docs](https://docs.rs/gh-config/badge.svg)](https://docs.rs/apdu/)
+[![crates.io](https://img.shields.io/crates/v/gh-config.svg)](https://crates.io/crates/gh-config)
+[![docs](https://docs.rs/gh-config/badge.svg)](https://docs.rs/gh-config/)
 
 Loads config and hosts for gh CLI in Rust.
 
