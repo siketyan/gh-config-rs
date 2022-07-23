@@ -119,9 +119,9 @@ impl Config {
 /// Host config representation for gh CLI.
 #[derive(Deserialize, Serialize)]
 pub struct Host {
-    pub user: String,
+    pub user: Option<String>,
     pub oauth_token: String,
-    pub git_protocol: GitProtocol,
+    pub git_protocol: Option<GitProtocol>,
 }
 
 /// Mapped host configs by their hostname.

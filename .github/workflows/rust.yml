@@ -31,7 +31,7 @@ jobs:
           components: rustfmt,clippy
 
       - name: Authenticate gh CLI
-        run: echo "${{ github.token }}" | gh auth login --with-token --hostname "github.com"
+        run: echo "${{ github.token }}" | gh auth login --with-token --hostname "github.com" --git-protocol "https"
 
       - name: Run clippy
         uses: actions-rs/clippy-check@v1
