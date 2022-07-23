@@ -57,7 +57,7 @@ pub enum Error {
 }
 
 /// What protocol to use when performing git operations.
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum GitProtocol {
     Https,
@@ -65,7 +65,7 @@ pub enum GitProtocol {
 }
 
 /// When to interactively prompt.
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Prompt {
     Enabled,
@@ -79,7 +79,7 @@ impl From<Prompt> for bool {
 }
 
 /// Config representation for gh CLI.
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Config {
     /// What protocol to use when performing git operations.
     pub git_protocol: GitProtocol,
@@ -117,7 +117,7 @@ impl Config {
 }
 
 /// Host config representation for gh CLI.
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Host {
     pub user: Option<String>,
     pub oauth_token: String,
@@ -125,7 +125,7 @@ pub struct Host {
 }
 
 /// Mapped host configs by their hostname.
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Hosts(HashMap<String, Host>);
 
 impl Hosts {
