@@ -69,7 +69,7 @@ macro_rules! output {
 fn run() -> Result<(), anyhow::Error> {
     let args: Args = Parser::parse();
 
-    Ok(match args.location {
+    match args.location {
         Location::Config { action } => {
             let config = match args.path {
                 Some(p) => Config::load_from(p),
@@ -90,16 +90,18 @@ fn run() -> Result<(), anyhow::Error> {
                 AuthnAction::List => output!(args, &hosts)?,
                 AuthnAction::Get { host, token_only } => match hosts.get(&host) {
                     Some(h) => match token_only {
-                        true => Ok(print!("{}", h.oauth_token)),
-                        _ => output!(args, &h),
+                        true => print!("{}", h.oauth_token),
+                        _ => output!(args, &h)?,
                     },
                     _ => Err(anyhow!(
                         "The specified host not found in the configuration."
-                    )),
-                }?,
+                    ))?,
+                },
             }
         }
-    })
+    }
+
+    Ok(())
 }
 
 fn main() {
