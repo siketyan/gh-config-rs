@@ -8,7 +8,7 @@ Loads config and hosts for gh CLI in Rust.
 ## Getting started
 ```toml
 [dependencies]
-gh-config = "0.1"
+gh-config = "0.2"
 ```
 
 ## Usage
