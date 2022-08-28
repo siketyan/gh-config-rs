@@ -112,7 +112,15 @@ pub struct Config {
 impl Config {
     /// Loads a config from the default path.
     pub fn load() -> Result<Self, Error> {
-        load(CONFIG_FILE_NAME)
+        Self::load_from(CONFIG_FILE_NAME)
+    }
+
+    /// Loads all host configs from the specified path.
+    pub fn load_from<P>(path: P) -> Result<Self, Error>
+    where
+        P: AsRef<Path>,
+    {
+        load(path)
     }
 }
 
@@ -131,7 +139,15 @@ pub struct Hosts(HashMap<String, Host>);
 impl Hosts {
     /// Loads all host configs from the default path.
     pub fn load() -> Result<Self, Error> {
-        load(HOSTS_FILE_NAME).map(Self)
+        Self::load_from(HOSTS_FILE_NAME)
+    }
+
+    /// Loads all host configs from the specified path.
+    pub fn load_from<P>(path: P) -> Result<Self, Error>
+    where
+        P: AsRef<Path>,
+    {
+        load(path).map(Self)
     }
 
     /// Gets a host config by the hostname.
