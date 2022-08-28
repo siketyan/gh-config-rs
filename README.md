@@ -28,3 +28,37 @@ fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 ```
+
+## CLI
+gh-config-rs is a hybrid crate that can be used as a library or a CLI.
+To use as a CLI, can be installed using the command line below:
+
+```shell
+cargo install gh-config-rs --features=cli
+```
+
+### Usages
+Lists all configuration in YAML:
+```shell
+gh-config config show
+```
+
+Uses JSON instead:
+```shell
+gh-config --json config show
+```
+
+Uses custom path of config.yaml instead of default:
+```shell
+gh-config --path /path/to/config.yaml config show
+```
+
+Gets an authentication for github.com:
+```shell
+gh-config authn get github.com
+```
+
+Outputs only the OAuth token instead:
+```shell
+gh-config authn get --token-only github.com
+```
