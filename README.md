@@ -34,7 +34,7 @@ gh-config-rs is a hybrid crate that can be used as a library or a CLI.
 To use as a CLI, can be installed using the command line below:
 
 ```shell
-cargo install gh-config-rs --features=cli
+cargo install gh-config --features=cli
 ```
 
 ### Usages
