@@ -41,7 +41,7 @@ mod windows {
 
     impl GhKeyring for Wincred {
         fn get(&self, host: &str) -> super::Result<Option<Vec<u8>>> {
-            let credential = MaybeUninit::<*mut CREDENTIALW>::uninit();
+            let mut credential = MaybeUninit::<*mut CREDENTIALW>::uninit();
             let name = PCWSTR::from_raw(
                 format!("gh:{}:", host)
                     .encode_utf16()
