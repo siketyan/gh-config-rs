@@ -29,6 +29,7 @@ mod windows {
         CredFree, CredReadW, CREDENTIALW, CRED_TYPE_GENERIC,
     };
     use std::iter::once;
+    use std::mem::MaybeUninit;
 
     #[derive(Debug, thiserror::Error)]
     pub enum Error {
