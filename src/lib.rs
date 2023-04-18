@@ -17,7 +17,7 @@
 //!     let hosts = Hosts::load()?;
 //!     
 //!     match hosts.get(GITHUB_COM) {
-//!         Some(host) => println!("Token for github.com: {}", hosts.retrieve_token(GITHUB_COM)?),
+//!         Some(host) => println!("Token for github.com: {}", hosts.retrieve_token(GITHUB_COM)?.unwrap()),
 //!         _ => eprintln!("Token not found."),
 //!     }
 //!
