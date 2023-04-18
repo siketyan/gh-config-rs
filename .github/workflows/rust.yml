@@ -19,9 +19,9 @@ jobs:
           # - ubuntu-22.04
         include:
           - os: windows-2022
-            tests: ''
+            tests: true
           - os: macos-12
-            tests: '--doc' # Keychain requires user interaction, not able to test on CI
+            tests: false # Keychain requires user interaction, not able to test on CI
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
@@ -58,9 +58,10 @@ jobs:
 
       - name: Run tests
         uses: actions-rs/cargo@v1
+        if: '${{ matrix.tests }}'
         with:
           command: test
-          args: --all-features ${{ matrix.tests }}
+          args: --all-features
 
   deploy:
     runs-on: ubuntu-22.04
