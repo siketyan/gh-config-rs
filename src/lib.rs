@@ -25,6 +25,8 @@
 //! }
 //! ```
 
+mod keyring;
+
 use std::collections::HashMap;
 use std::env::var;
 use std::path::{Path, PathBuf};
