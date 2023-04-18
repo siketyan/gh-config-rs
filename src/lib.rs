@@ -180,11 +180,10 @@ impl Hosts {
     pub fn retrieve_token(&self, hostname: &str) -> Result<Option<String>, Error> {
         Ok(self.retrieve_token_secure(hostname)?.or_else(|| {
             self.get(hostname)
-                .map(|h| match h.oauth_token.is_empty() {
+                .and_then(|h| match h.oauth_token.is_empty() {
                     true => None,
                     _ => Some(h.oauth_token.to_owned()),
                 })
-                .flatten()
         }))
     }
 

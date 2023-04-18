@@ -90,6 +90,7 @@ fn run() -> Result<(), anyhow::Error> {
                 AuthnAction::List => output!(args, &hosts)?,
                 AuthnAction::Get { host, token_only } => match hosts.get(&host) {
                     Some(h) => match token_only {
+                        #[allow(deprecated)]
                         true => print!("{}", h.oauth_token),
                         _ => output!(args, &h)?,
                     },
