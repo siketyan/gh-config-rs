@@ -51,11 +51,11 @@ mod windows {
             );
 
             match unsafe { CredReadW(name, CRED_TYPE_GENERIC.0, 0, credential.as_mut_ptr()) }.ok() {
-                Ok(_) => match unsafe { GetLastError() } {
+                Err(_) => match unsafe { GetLastError() } {
                     ERROR_NOT_FOUND => Ok(None),
                     e => Err(Error::Win32(e.0)),
                 },
-                Err(_) => {
+                Ok(_) => {
                     let credential = unsafe { credential.assume_init() };
                     let token = unsafe {
                         std::slice::from_raw_parts(
