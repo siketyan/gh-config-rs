@@ -11,7 +11,13 @@ env:
 
 jobs:
   checks:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        os:
+          - windows-2022
+          - macos-12
+          # - ubuntu-22.04
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v3
 
@@ -31,7 +37,7 @@ jobs:
           components: rustfmt,clippy
 
       - name: Authenticate gh CLI
-        run: echo "${{ github.token }}" | gh auth login --with-token --hostname "github.com" --git-protocol "https"
+        run: echo "${{ github.token }}" | gh auth login --with-token --secure-storage --hostname "github.com" --git-protocol "https"
 
       - name: Run clippy
         uses: actions-rs/clippy-check@v1

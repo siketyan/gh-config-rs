@@ -13,11 +13,60 @@ pub trait GhKeyring {
     fn get(&self, host: &str) -> Result<Option<Vec<u8>>>;
 }
 
+#[cfg(target_os = "windows")]
 mod windows {
+    use super::*;
+    use windows::core::PCWSTR;
+    use windows::Win32::Foundation::{GetLastError, ERROR_NOT_FOUND, WIN32_ERROR};
+    use windows::Win32::Security::Credentials::{
+        CredFree, CredReadW, CREDENTIALW, CRED_TYPE_GENERIC,
+    };
+
     #[derive(Debug, thiserror::Error)]
-    pub enum Error {}
+    pub enum Error {
+        #[error("Win32 API error: {0}")]
+        Win32(WIN32_ERROR),
+    }
+
+    pub struct Wincred;
+
+    impl GhKeyring for Wincred {
+        fn get(&self, host: &str) -> super::Result<Option<Vec<u8>>> {
+            let credential = MaybeUninit::<*mut CREDENTIALW>::uninit();
+            let name = PCWSTR::from_raw(
+                format!("gh:{}:")
+                    .encode_utf16()
+                    .chain(once(0))
+                    .collect::<Vec<_>>()
+                    .as_ptr(),
+            );
+
+            match unsafe { CredReadW(name, CRED_TYPE_GENERIC, 0, credential.as_mut_ptr()) } {
+                0 => match unsafe { GetLastError() } {
+                    ERROR_NOT_FOUND => Ok(None),
+                    e => Err(Error::Win32(e)),
+                },
+                _ => {
+                    let credential = unsafe { credential.assume_init() };
+                    let token = unsafe {
+                        std::slice::from_raw_parts(
+                            (&*credential).CredentialBlob,
+                            (&*credential).CredentialBlobSize,
+                        )
+                    }
+                    .to_vec();
+
+                    unsafe { CredFree(credential as *mut _) };
+
+                    Ok(Some(token))
+                }
+            }
+            .map_err(super::Error::Windows)
+        }
+    }
 }
 
+#[cfg(target_os = "macos")]
 mod macos {
     use super::*;
     use base64::Engine;
@@ -90,10 +139,14 @@ mod macos {
     }
 }
 
+#[cfg(target_os = "linux")]
 mod linux {
     #[derive(Debug, thiserror::Error)]
     pub enum Error {}
 }
+
+#[cfg(target_os = "windows")]
+pub use windows::Wincred as Keyring;
 
 #[cfg(target_os = "macos")]
 pub use macos::Keychain as Keyring;
