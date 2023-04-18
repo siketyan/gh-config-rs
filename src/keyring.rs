@@ -1,10 +1,16 @@
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[cfg(target_os = "windows")]
     #[error(transparent)]
     Windows(#[from] windows::Error),
 
+    #[cfg(target_os = "macos")]
     #[error(transparent)]
     Macos(#[from] macos::Error),
+
+    #[cfg(target_os = "linux")]
+    #[error(transparent)]
+    Macos(#[from] linux::Error),
 }
 
 type Result<T> = std::result::Result<T, Error>;
