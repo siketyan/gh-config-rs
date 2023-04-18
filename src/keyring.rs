@@ -2,15 +2,15 @@
 pub enum Error {
     #[cfg(target_os = "windows")]
     #[error(transparent)]
-    Windows(#[from] windows::Error),
+    Windows(#[from] self::windows::Error),
 
     #[cfg(target_os = "macos")]
     #[error(transparent)]
-    Macos(#[from] macos::Error),
+    Macos(#[from] self::macos::Error),
 
     #[cfg(target_os = "linux")]
     #[error(transparent)]
-    Macos(#[from] linux::Error),
+    Macos(#[from] self::linux::Error),
 }
 
 type Result<T> = std::result::Result<T, Error>;
@@ -22,9 +22,9 @@ pub trait GhKeyring {
 #[cfg(target_os = "windows")]
 mod windows {
     use super::*;
-    use windows::core::PCWSTR;
-    use windows::Win32::Foundation::{GetLastError, ERROR_NOT_FOUND, WIN32_ERROR};
-    use windows::Win32::Security::Credentials::{
+    use ::windows::core::PCWSTR;
+    use ::windows::Win32::Foundation::{GetLastError, ERROR_NOT_FOUND, WIN32_ERROR};
+    use ::windows::Win32::Security::Credentials::{
         CredFree, CredReadW, CREDENTIALW, CRED_TYPE_GENERIC,
     };
 
@@ -152,10 +152,10 @@ mod linux {
 }
 
 #[cfg(target_os = "windows")]
-pub use windows::Wincred as Keyring;
+pub use self::windows::Wincred as Keyring;
 
 #[cfg(target_os = "macos")]
-pub use macos::Keychain as Keyring;
+pub use self::macos::Keychain as Keyring;
 
 #[cfg(test)]
 mod tests {
