@@ -24,7 +24,7 @@ pub trait GhKeyring {
 mod windows {
     use super::*;
     use ::windows::core::PCWSTR;
-    use ::windows::Win32::Foundation::{GetLastError, ERROR_NOT_FOUND, WIN32_ERROR};
+    use ::windows::Win32::Foundation::{GetLastError, ERROR_NOT_FOUND};
     use ::windows::Win32::Security::Credentials::{
         CredFree, CredReadW, CREDENTIALW, CRED_TYPE_GENERIC,
     };
@@ -60,7 +60,7 @@ mod windows {
                     let token = unsafe {
                         std::slice::from_raw_parts(
                             (&*credential).CredentialBlob,
-                            (&*credential).CredentialBlobSize,
+                            (&*credential).CredentialBlobSize as usize,
                         )
                     }
                     .to_vec();
