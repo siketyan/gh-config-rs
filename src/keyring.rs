@@ -10,7 +10,7 @@ pub enum Error {
 type Result<T> = std::result::Result<T, Error>;
 
 pub trait GhKeyring {
-    fn get(&self, host: &str) -> Result<Vec<u8>>;
+    fn get(&self, host: &str) -> Result<Option<Vec<u8>>>;
 }
 
 mod windows {
@@ -73,15 +73,17 @@ mod macos {
     pub struct Keychain;
 
     impl GhKeyring for Keychain {
-        fn get(&self, host: &str) -> super::Result<Vec<u8>> {
-            (|| {
-                Ok(GhEncodedToken::try_from(
-                    SecKeychain::default_for_domain(SecPreferencesDomain::User)?
-                        .find_generic_password(format!("gh:{}", host).as_str(), "")?
-                        .0
-                        .as_ref(),
-                )?
-                .decode()?)
+        fn get(&self, host: &str) -> super::Result<Option<Vec<u8>>> {
+            (|| match SecKeychain::default_for_domain(SecPreferencesDomain::User)?
+                .find_generic_password(format!("gh:{}", host).as_str(), "")
+            {
+                Ok((token, _)) => GhEncodedToken::try_from(token.as_ref())
+                    .and_then(|t| t.decode())
+                    .map(Some),
+                Err(e) => match e.code() {
+                    -25300 => Ok(None),
+                    _ => Err(e.into()),
+                },
             })()
             .map_err(super::Error::Macos)
         }
@@ -102,6 +104,6 @@ mod tests {
 
     #[test]
     fn get_from_keyring() {
-        assert!(!Keyring.get("github.com").unwrap().is_empty());
+        assert!(Keyring.get("github.com").unwrap().is_some());
     }
 }

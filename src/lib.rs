@@ -17,7 +17,7 @@
 //!     let hosts = Hosts::load()?;
 //!     
 //!     match hosts.get(GITHUB_COM) {
-//!         Some(host) => println!("Token for github.com: {}", host.oauth_token),
+//!         Some(host) => println!("Token for github.com: {}", hosts.retrieve_token(GITHUB_COM)?),
 //!         _ => eprintln!("Token not found."),
 //!     }
 //!
@@ -33,6 +33,8 @@ use std::path::{Path, PathBuf};
 
 use dirs::home_dir;
 use serde::{Deserialize, Serialize};
+
+use crate::keyring::{GhKeyring, Keyring};
 
 #[cfg(target_os = "windows")]
 const APP_DATA: &str = "AppData";
@@ -53,6 +55,9 @@ pub enum Error {
 
     #[error("I/O error: {0}")]
     Io(#[from] std::io::Error),
+
+    #[error("Secure storage error: {0}")]
+    Keyring(#[from] keyring::Error),
 
     #[error("Config file not found.")]
     ConfigNotFound,
@@ -130,6 +135,11 @@ impl Config {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Host {
     pub user: Option<String>,
+    #[deprecated(
+        since = "0.2.2",
+        note = "gh CLI has been migrated to secure storage, and the tokens there are not able to be retrieved using this field. Use [`Hosts::retrieve_token`] instead."
+    )]
+    #[serde(default)]
     pub oauth_token: String,
     pub git_protocol: Option<GitProtocol>,
 }
@@ -161,6 +171,30 @@ impl Hosts {
     /// If no values present currently, returns `None` .
     pub fn set(&mut self, hostname: impl Into<String>, host: Host) -> Option<Host> {
         self.0.insert(hostname.into(), host)
+    }
+
+    /// Retrieves a token from the secure storage or insecure storage.
+    /// User interaction may be required to unlock the keychain, depending on the OS.
+    /// If any token found for the hostname, returns None.
+    #[allow(deprecated)]
+    pub fn retrieve_token(&self, hostname: &str) -> Result<Option<String>, Error> {
+        Ok(self.retrieve_token_secure(hostname)?.or_else(|| {
+            self.get(hostname)
+                .map(|h| match h.oauth_token.is_empty() {
+                    true => None,
+                    _ => Some(h.oauth_token.to_owned()),
+                })
+                .flatten()
+        }))
+    }
+
+    /// Retrieves a token from the secure storage only.
+    /// User interaction may be required to unlock the keychain, depending on the OS.
+    /// If any token found for the hostname, returns None.
+    pub fn retrieve_token_secure(&self, hostname: &str) -> Result<Option<String>, Error> {
+        Ok(Keyring
+            .get(hostname)?
+            .map(|t| String::from_utf8(t).unwrap()))
     }
 }
 
