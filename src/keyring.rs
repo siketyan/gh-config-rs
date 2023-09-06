@@ -152,6 +152,8 @@ mod macos {
 mod linux {
     use super::*;
     use secret_service::blocking::SecretService as SecretServiceBus;
+    use secret_service::EncryptionType;
+    use std::collections::HashMap;
 
     #[derive(Debug, thiserror::Error)]
     pub enum Error {
@@ -164,14 +166,16 @@ mod linux {
     impl GhKeyring for SecretService {
         fn get(&self, host: &str) -> Result<Option<Vec<u8>>> {
             (|| {
-                let service = SecretServiceBus::connect(EncryptionType::Dh).await?;
+                let service = SecretServiceBus::connect(EncryptionType::Dh)?;
                 let collection = service.get_default_collection()?;
 
                 collection.unlock()?;
 
                 let service_name = format!("gh:{}", host);
-                let items = collection
-                    .search_items(HashMap::from([("username", ""), ("service", service_name)]))?;
+                let items = collection.search_items(HashMap::from([
+                    ("username", ""),
+                    ("service", service_name.as_str()),
+                ]))?;
 
                 let item = match items.first() {
                     Some(i) => i,
