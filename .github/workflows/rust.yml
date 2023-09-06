@@ -11,7 +11,20 @@ env:
 
 jobs:
   checks:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        os:
+          - windows-2022
+          - macos-12
+          - ubuntu-22.04
+        include:
+          - os: windows-2022
+            tests: true
+          - os: macos-12
+            tests: false # Keychain requires user interaction, not able to test on CI
+          - os: ubuntu-22.04
+            tests: false # Keychain requires user interaction, not able to test on CI
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3df4ab11eba7bda6032a0b82a6bb43b11571feac # v4
 
@@ -31,7 +44,7 @@ jobs:
           components: rustfmt,clippy
 
       - name: Authenticate gh CLI
-        run: echo "${{ github.token }}" | gh auth login --with-token --hostname "github.com" --git-protocol "https"
+        run: echo "${{ github.token }}" | gh auth login --with-token --secure-storage --hostname "github.com" --git-protocol "https"
 
       - name: Run clippy
         uses: actions-rs/clippy-check@v1
@@ -47,6 +60,7 @@ jobs:
 
       - name: Run tests
         uses: actions-rs/cargo@v1
+        if: '${{ matrix.tests }}'
         with:
           command: test
           args: --all-features

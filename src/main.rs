@@ -90,7 +90,10 @@ fn run() -> Result<(), anyhow::Error> {
                 AuthnAction::List => output!(args, &hosts)?,
                 AuthnAction::Get { host, token_only } => match hosts.get(&host) {
                     Some(h) => match token_only {
-                        true => print!("{}", h.oauth_token),
+                        true => match hosts.retrieve_token(&host)? {
+                            Some(t) => print!("{}", t),
+                            _ => return Err(anyhow!("Token was not found for the host.")),
+                        },
                         _ => output!(args, &h)?,
                     },
                     _ => Err(anyhow!(
