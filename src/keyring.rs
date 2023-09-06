@@ -11,7 +11,7 @@ pub enum Error {
 
     #[cfg(target_os = "linux")]
     #[error(transparent)]
-    Macos(#[from] self::linux::Error),
+    Linux(#[from] self::linux::Error),
 }
 
 type Result<T> = std::result::Result<T, Error>;
@@ -150,8 +150,41 @@ mod macos {
 
 #[cfg(target_os = "linux")]
 mod linux {
+    use super::*;
+    use secret_service::blocking::SecretService as SecretServiceBus;
+
     #[derive(Debug, thiserror::Error)]
-    pub enum Error {}
+    pub enum Error {
+        #[error("Secret Service returned an error: {0}")]
+        SecretService(#[from] secret_service::Error),
+    }
+
+    pub struct SecretService;
+
+    impl GhKeyring for SecretService {
+        fn get(&self, host: &str) -> Result<Option<Vec<u8>>> {
+            (|| {
+                let service = SecretServiceBus::connect(EncryptionType::Dh).await?;
+                let collection = service.get_default_collection()?;
+
+                collection.unlock()?;
+
+                let service_name = format!("gh:{}", host);
+                let items = collection
+                    .search_items(HashMap::from([("username", ""), ("service", service_name)]))?;
+
+                let item = match items.first() {
+                    Some(i) => i,
+                    None => return Ok(None),
+                };
+
+                item.unlock()?;
+
+                Ok(Some(item.get_secret()?))
+            })()
+            .map_err(super::Error::Linux)
+        }
+    }
 }
 
 #[cfg(target_os = "windows")]
@@ -159,6 +192,9 @@ pub use self::windows::Wincred as Keyring;
 
 #[cfg(target_os = "macos")]
 pub use self::macos::Keychain as Keyring;
+
+#[cfg(target_os = "linux")]
+pub use self::linux::SecretService as Keyring;
 
 #[cfg(test)]
 mod tests {

@@ -16,11 +16,13 @@ jobs:
         os:
           - windows-2022
           - macos-12
-          # - ubuntu-22.04
+          - ubuntu-22.04
         include:
           - os: windows-2022
             tests: true
           - os: macos-12
+            tests: false # Keychain requires user interaction, not able to test on CI
+          - os: ubuntu-22.04
             tests: false # Keychain requires user interaction, not able to test on CI
     runs-on: ${{ matrix.os }}
     steps:
