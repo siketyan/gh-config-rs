@@ -4,7 +4,7 @@
 //! ## Getting started
 //! ```toml
 //! [dependencies]
-//! gh-config = "0.1"
+//! gh-config = "0.2"
 //! ```
 //!
 //! ## Usage
@@ -135,12 +135,8 @@ impl Config {
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct Host {
     pub user: Option<String>,
-    #[deprecated(
-        since = "0.2.2",
-        note = "gh CLI has been migrated to secure storage, and the tokens there are not able to be retrieved using this field. Use [`Hosts::retrieve_token`] instead."
-    )]
     #[serde(default)]
-    pub oauth_token: String,
+    oauth_token: String,
     pub git_protocol: Option<GitProtocol>,
 }
 
