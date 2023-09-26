@@ -24,7 +24,7 @@ pub trait GhKeyring {
 mod windows {
     use super::*;
     use ::windows::core::PCWSTR;
-    use ::windows::Win32::Foundation::{GetLastError, ERROR_NOT_FOUND};
+    use ::windows::Win32::Foundation::ERROR_NOT_FOUND;
     use ::windows::Win32::Security::Credentials::{
         CredFree, CredReadW, CREDENTIALW, CRED_TYPE_GENERIC,
     };
@@ -34,7 +34,7 @@ mod windows {
     #[derive(Debug, thiserror::Error)]
     pub enum Error {
         #[error("Win32 API error: {0}")]
-        Win32(u32),
+        Win32(i32),
     }
 
     pub struct Wincred;
@@ -50,10 +50,10 @@ mod windows {
                     .as_ptr(),
             );
 
-            match unsafe { CredReadW(name, CRED_TYPE_GENERIC.0, 0, credential.as_mut_ptr()) }.ok() {
-                Err(_) => match unsafe { GetLastError() } {
-                    ERROR_NOT_FOUND => Ok(None),
-                    e => Err(Error::Win32(e.0)),
+            match unsafe { CredReadW(name, CRED_TYPE_GENERIC.0, 0, credential.as_mut_ptr()) } {
+                Err(e) => match e == ERROR_NOT_FOUND.into() {
+                    true => Ok(None),
+                    _ => Err(Error::Win32(e.code().0)),
                 },
                 Ok(_) => {
                     let credential = unsafe { credential.assume_init() };
