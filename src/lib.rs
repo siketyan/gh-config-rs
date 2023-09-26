@@ -4,7 +4,7 @@
 //! ## Getting started
 //! ```toml
 //! [dependencies]
-//! gh-config = "0.2"
+//! gh-config = "0.3"
 //! ```
 //!
 //! ## Usage
