@@ -27,7 +27,7 @@ jobs:
           - tests: false # Keychain requires user interaction, not able to test on CI
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: actions/checkout@v4
 
       - uses: actions/cache@v3
         with:
@@ -37,34 +37,26 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-v1-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Install latest stable
-        uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
           components: rustfmt,clippy
 
       - name: Authenticate gh CLI
         run: echo "${{ github.token }}" | gh auth login --with-token --secure-storage --hostname "github.com" --git-protocol "https"
 
       - name: Run clippy
-        uses: actions-rs/clippy-check@v1
+        uses: giraffate/clippy-action@v1
         with:
-          token: ${{ github.token }}
-          args: --all-features
+          clippy_flags: -- -Dwarnings
+          reporter: github-pr-check
+          fail_on_error: true
 
       - name: Run rustfmt
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all --check
+        run: cargo fmt --all --check
 
       - name: Run tests
-        uses: actions-rs/cargo@v1
         if: '${{ matrix.tests }}'
-        with:
-          command: test
-          args: --all-features
+        run: cargo test --all-features
 
   deploy:
     runs-on: ubuntu-22.04
@@ -72,7 +64,7 @@ jobs:
     needs:
       - checks
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      - uses: actions/checkout@v4
 
       - uses: actions/cache@v3
         with:
@@ -82,20 +74,10 @@ jobs:
             target
           key: ${{ runner.os }}-cargo-v1-${{ hashFiles('**/Cargo.toml') }}
 
-      - name: Install latest stable
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - uses: dtolnay/rust-toolchain@stable
 
       - name: Log into crates.io
-        uses: actions-rs/cargo@v1
-        with:
-          command: login
-          args: ${{ secrets.CRATES_IO_TOKEN }}
+        run: cargo login '${{ secrets.CRATES_IO_TOKEN }}'
 
       - name: Publish to crates.io
-        uses: actions-rs/cargo@v1
-        with:
-          command: publish
-          args: --allow-dirty
+        run: cargo publish --allow-dirty
