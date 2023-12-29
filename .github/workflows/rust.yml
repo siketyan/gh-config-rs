@@ -15,15 +15,12 @@ jobs:
       matrix:
         os:
           - windows-2022
-          - macos-12
+          - macos-13
           - ubuntu-22.04
         include:
           - os: windows-2022
             tests: true
-          - os: macos-12
-            tests: false # Keychain requires user interaction, not able to test on CI
-          - os: ubuntu-22.04
-            tests: false # Keychain requires user interaction, not able to test on CI
+          - tests: false # Keychain requires user interaction, not able to test on CI
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4
