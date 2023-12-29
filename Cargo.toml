@@ -1,17 +1,13 @@
 [package]
 name = "gh-config"
 description = "Loads config and hosts for gh CLI."
-version = "0.3.0"
+authors = ["Natsuki Ikeguchi <me@s6n.jp>"]
+version = "0.3.1"
 license = "MIT"
 homepage = "https://github.com/siketyan/gh-config-rs"
 repository = "https://github.com/siketyan/gh-config-rs.git"
 readme = "README.md"
 edition = "2021"
-authors = [
-    # Thank you for your contribution!
-    # While contributing to this project, feel free to add your name here :)
-    "Naoki Ikeguchi <me@s6n.jp>",
-]
 
 [dependencies]
 dirs = "5.0"
