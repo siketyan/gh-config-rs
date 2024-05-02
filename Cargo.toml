@@ -27,7 +27,7 @@ features = [
 ]
 
 [target.'cfg(target_os = "macos")'.dependencies]
-base64 = "0.22.0"
+base64 = "0.22.1"
 hex = "0.4.3"
 security-framework = "2.10"
 
