@@ -2,7 +2,7 @@
 name = "gh-config"
 description = "Loads config and hosts for gh CLI."
 authors = ["Natsuki Ikeguchi <me@s6n.jp>"]
-version = "0.3.2"
+version = "0.4.0"
 license = "MIT"
 homepage = "https://github.com/siketyan/gh-config-rs"
 repository = "https://github.com/siketyan/gh-config-rs.git"
