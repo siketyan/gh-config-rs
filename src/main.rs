@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use clap::Parser;
-use gh_config::{Config, Hosts};
+use gh_config::{retrieve_token_secure, Config, Hosts};
 use std::path::PathBuf;
 
 #[derive(Debug, clap::Subcommand)]
@@ -21,6 +21,10 @@ enum AuthnAction {
         /// Outputs only the OAuth token.
         #[clap(long)]
         token_only: bool,
+
+        /// Use the secure storage only, ignoring the environment variables or the hosts file.
+        #[clap(long)]
+        secure: bool,
     },
 }
 
@@ -88,9 +92,16 @@ fn run() -> Result<(), anyhow::Error> {
 
             match action {
                 AuthnAction::List => output!(args, &hosts)?,
-                AuthnAction::Get { host, token_only } => match hosts.get(&host) {
+                AuthnAction::Get {
+                    host,
+                    token_only,
+                    secure,
+                } => match hosts.get(&host) {
                     Some(h) => match token_only {
-                        true => match hosts.retrieve_token(&host)? {
+                        true => match match secure {
+                            true => retrieve_token_secure(&host),
+                            _ => hosts.retrieve_token(&host),
+                        }? {
                             Some(t) => print!("{}", t),
                             _ => return Err(anyhow!("Token was not found for the host.")),
                         },

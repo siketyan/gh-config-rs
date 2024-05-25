@@ -46,6 +46,8 @@ const HOSTS_FILE_NAME: &str = "hosts.yml";
 
 /// Hostname of github.com.
 pub const GITHUB_COM: &str = "github.com";
+pub const GHE_COM: &str = "ghe.com";
+pub const LOCALHOST: &str = "github.localhost";
 
 /// An error occurred in this crate.
 #[derive(Debug, thiserror::Error)]
@@ -169,28 +171,64 @@ impl Hosts {
         self.0.insert(hostname.into(), host)
     }
 
-    /// Retrieves a token from the secure storage or insecure storage.
+    /// Retrieves a token from the environment variables, the hosts file, or the secure storage.
     /// User interaction may be required to unlock the keychain, depending on the OS.
     /// If any token found for the hostname, returns None.
-    #[allow(deprecated)]
     pub fn retrieve_token(&self, hostname: &str) -> Result<Option<String>, Error> {
-        Ok(self.retrieve_token_secure(hostname)?.or_else(|| {
-            self.get(hostname)
-                .and_then(|h| match h.oauth_token.is_empty() {
-                    true => None,
-                    _ => Some(h.oauth_token.to_owned()),
-                })
-        }))
+        if let Some(token) = retrieve_token_from_env(is_enterprise(hostname)) {
+            return Ok(Some(token));
+        }
+
+        if let Some(token) = self
+            .get(hostname)
+            .and_then(|h| match h.oauth_token.is_empty() {
+                true => None,
+                _ => Some(h.oauth_token.to_owned()),
+            })
+        {
+            return Ok(Some(token));
+        }
+
+        retrieve_token_secure(hostname)
     }
 
     /// Retrieves a token from the secure storage only.
     /// User interaction may be required to unlock the keychain, depending on the OS.
     /// If any token found for the hostname, returns None.
+    #[deprecated(
+        since = "0.4.0",
+        note = "Use `retrieve_token_secure` without `Hosts` struct instead."
+    )]
     pub fn retrieve_token_secure(&self, hostname: &str) -> Result<Option<String>, Error> {
-        Ok(Keyring
-            .get(hostname)?
-            .map(|t| String::from_utf8(t).unwrap()))
+        retrieve_token_secure(hostname)
     }
+}
+
+/// Determines the provided hostname is a GitHub Enterprise Server instance or not.
+pub fn is_enterprise(host: &str) -> bool {
+    host != GITHUB_COM && host != LOCALHOST && !host.ends_with(&format!(".{}", GHE_COM))
+}
+
+/// Retrieves a token from the environment variables `GH_TOKEN` or `GITHUB_TOKEN`.
+/// Also tries to retrieve from `GH_ENTERPRISE_TOKEN` or `GITHUB_ENTERPRISE_TOKEN`, if the
+/// enterprise flag enabled.
+pub fn retrieve_token_from_env(enterprise: bool) -> Option<String> {
+    if enterprise {
+        if let Ok(token) = var("GH_ENTERPRISE_TOKEN").or_else(|_| var("GITHUB_ENTERPRISE_TOKEN")) {
+            return Some(token);
+        }
+    }
+
+    var("GH_TOKEN").or_else(|_| var("GITHUB_TOKEN")).ok()
+}
+
+/// Retrieves a token from the secure storage.
+/// User interaction may be required to unlock the keychain, depending on the OS.
+/// If any token found for the hostname, returns None.
+pub fn retrieve_token_secure(hostname: &str) -> Result<Option<String>, Error> {
+    Ok(Keyring
+        .get(hostname)?
+        .map(|t| String::from_utf8(t).unwrap()))
 }
 
 /// Finds the default config directory effected by the environment.
