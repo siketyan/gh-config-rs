@@ -50,7 +50,7 @@ mod windows {
                     .as_ptr(),
             );
 
-            match unsafe { CredReadW(name, CRED_TYPE_GENERIC, 0, credential.as_mut_ptr()) } {
+            match unsafe { CredReadW(name, CRED_TYPE_GENERIC, None, credential.as_mut_ptr()) } {
                 Err(e) => match e == ERROR_NOT_FOUND.into() {
                     true => Ok(None),
                     _ => Err(Error::Win32(e.code().0)),

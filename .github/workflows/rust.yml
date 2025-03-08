@@ -15,6 +15,28 @@ permissions:
 
 jobs:
   checks:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt,clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Run rustfmt
+        run: cargo fmt --all --check
+
+      - name: Run clippy
+        uses: giraffate/clippy-action@v1
+        with:
+          clippy_flags: -- -Dwarnings
+          reporter: github-pr-check
+          fail_on_error: true
+
+  build:
+    needs: checks
     strategy:
       matrix:
         os:
@@ -34,30 +56,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-v1-${{ hashFiles('**/Cargo.lock') }}
-
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt,clippy
+
+      - uses: Swatinem/rust-cache@v2
 
       - name: Authenticate gh CLI
         run: echo "${{ github.token }}" | gh auth login --with-token --secure-storage --hostname "github.com" --git-protocol "https"
 
-      - name: Run clippy
-        uses: giraffate/clippy-action@v1
-        with:
-          clippy_flags: -- -Dwarnings
-          reporter: github-pr-check
-          fail_on_error: true
-
-      - name: Run rustfmt
-        run: cargo fmt --all --check
+      - name: Build
+        run: cargo build --all-features
 
       - name: Run tests
         if: '${{ matrix.tests }}'
@@ -70,14 +77,6 @@ jobs:
       - checks
     steps:
       - uses: actions/checkout@v4
-
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-v1-${{ hashFiles('**/Cargo.toml') }}
 
       - uses: dtolnay/rust-toolchain@stable
 
