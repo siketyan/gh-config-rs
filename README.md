@@ -10,7 +10,7 @@ Loads config and hosts for gh CLI in Rust.
 
 ```toml
 [dependencies]
-gh-config = "0.4.0"
+gh-config = "0.5.0"
 ```
 
 ## Usage
