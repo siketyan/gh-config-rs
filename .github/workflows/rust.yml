@@ -49,6 +49,9 @@ jobs:
       - name: Authenticate gh CLI
         run: echo "${{ github.token }}" | gh auth login --with-token --secure-storage --hostname "github.com" --git-protocol "https"
 
+      - name: Run rustfmt
+        run: cargo fmt --all --check
+
       - name: Run clippy
         uses: giraffate/clippy-action@v1
         with:
@@ -56,8 +59,8 @@ jobs:
           reporter: github-pr-check
           fail_on_error: true
 
-      - name: Run rustfmt
-        run: cargo fmt --all --check
+      - name: Build
+        run: cargo build --all-features
 
       - name: Run tests
         if: '${{ matrix.tests }}'
