@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   checks:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
 
@@ -67,7 +67,7 @@ jobs:
         run: cargo test --all-features
 
   deploy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     if: ${{ github.event_name == 'release' }}
     needs:
       - checks
